@@ -2,13 +2,13 @@
 
 @theme {
   --font-sans: "Plus Jakarta Sans", sans-serif;
-  --color-surface: #0a0a0a;
-  --color-surface-raised: #111111;
-  --color-border-subtle: #1e1e1e;
-  --color-text-primary: #e8e4df;
-  --color-text-secondary: #6b6660;
-  --color-text-tertiary: #3d3a37;
-  --color-accent: #a89a8c;
+  --color-surface: #1b1b1c;
+  --color-surface-raised: #26262a;
+  --color-border-subtle: #2e2e32;
+  --color-text-primary: #e9e3d6;
+  --color-text-secondary: #a39b8a;
+  --color-text-tertiary: #7a7468;
+  --color-accent: #d07456;
 }
 
 html {
@@ -25,8 +25,13 @@ a.card-link {
 }
 
 a.card-link:hover {
-  border-color: #2a2725;
-  background-color: #141211;
+  border-color: var(--color-accent);
+  background-color: var(--color-surface-raised);
+}
+
+::selection {
+  background-color: var(--color-accent);
+  color: var(--color-surface);
 }
 
 a.social-link {
@@ -34,7 +39,7 @@ a.social-link {
 }
 
 a.social-link:hover {
-  color: var(--color-text-primary);
+  color: var(--color-accent);
 }
 
 @keyframes fade-up {
