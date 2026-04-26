@@ -7,38 +7,39 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
   <body
-    class="bg-surface text-text-primary font-sans min-h-screen flex items-center justify-center px-6 py-16 md:py-0"
+    class="bg-bg text-text font-mono min-h-screen flex items-center justify-center px-8 py-16 md:py-0"
   >
-    <div
-      class="w-full max-w-3xl flex flex-col md:flex-row md:items-start gap-16 md:gap-20"
+    <main
+      class="w-full max-w-3xl flex flex-col md:flex-row md:items-start gap-12 md:gap-16"
     >
-      <!-- Left: Identity -->
-      <div class="md:w-2/5 flex flex-col gap-6 animate-in">
+      <!-- Left: identity -->
+      <section class="md:w-2/5 flex flex-col gap-6 animate-in">
         <div>
+          <p class="t-eyebrow mb-3">colophon</p>
           <h1
             class="text-4xl md:text-5xl font-semibold tracking-tight leading-none mb-2"
+            style="letter-spacing: -0.04em"
           >
-            Noel Kleen
+            noel kleen<span class="caret" aria-hidden="true"></span>
           </h1>
-          <p class="text-text-tertiary text-sm font-light tracking-wide">
+          <p class="text-sub text-sm" style="color: var(--color-sub)">
             noelkleen.com
           </p>
         </div>
 
-        <div class="flex items-center gap-5">
-          <!-- GitHub -->
+        <nav class="flex items-center gap-5" aria-label="contact">
           <a
             href="https://github.com/AbstractNucleus"
             target="_blank"
             rel="noopener noreferrer"
-            class="social-link text-text-secondary"
-            aria-label="GitHub"
+            class="social-link"
+            aria-label="github"
           >
             <svg
               width="18"
@@ -52,13 +53,12 @@
             </svg>
           </a>
 
-          <!-- Discord -->
           <a
             href="https://discord.com/users/abstractnucleus"
             target="_blank"
             rel="noopener noreferrer"
-            class="social-link text-text-secondary"
-            aria-label="Discord"
+            class="social-link"
+            aria-label="discord"
           >
             <svg
               width="20"
@@ -72,11 +72,10 @@
             </svg>
           </a>
 
-          <!-- Email -->
           <a
             href="mailto:noelhkleen@gmail.com"
-            class="social-link text-text-secondary"
-            aria-label="Email"
+            class="social-link"
+            aria-label="email"
           >
             <svg
               width="18"
@@ -92,24 +91,27 @@
               <path d="M22 7l-10 6L2 7" />
             </svg>
           </a>
-        </div>
-      </div>
+        </nav>
+      </section>
 
-      <!-- Right: Subdomain links -->
-      <div class="md:w-3/5 flex flex-col gap-3">
+      <!-- Right: subdomains -->
+      <section class="md:w-3/5 flex flex-col gap-3">
+        <p class="t-eyebrow mb-1 animate-in">elsewhere</p>
+
         <a
           href="https://party.noelkleen.com"
-          class="card-link block border border-border-subtle rounded-lg px-5 py-4 animate-in"
-          style="animation-delay: 0.1s"
+          class="card-link block rounded-lg px-6 py-5 animate-in"
+          style="animation-delay: 80ms"
         >
-          <div class="text-text-primary text-sm font-medium mb-0.5">
-            Party Games
-          </div>
-          <div class="text-text-tertiary text-xs font-light">
+          <div class="text-sm font-medium mb-0.5">party games</div>
+          <div
+            class="text-xs"
+            style="color: var(--color-sub)"
+          >
             party.noelkleen.com
           </div>
         </a>
-      </div>
-    </div>
+      </section>
+    </main>
   </body>
 </html>
