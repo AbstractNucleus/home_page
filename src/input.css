@@ -106,4 +106,10 @@ a.social-link:focus-visible {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+
+  /* Caret blink is a UI affordance, not vestibular motion — keep it. */
+  .caret {
+    animation-duration: 1s !important;
+    animation-iteration-count: infinite !important;
+  }
 }
