@@ -216,9 +216,19 @@ a:hover { color: var(--accent-soft); }
 
 .hero {
   display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-16);
+}
+
+.hero-text {
+  display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  margin-bottom: var(--space-16);
+  min-width: 0;
+  flex: 1;
 }
 
 .contact {
@@ -250,7 +260,7 @@ a:hover { color: var(--accent-soft); }
 
 .columns {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--space-8);
 }
 
@@ -337,6 +347,110 @@ a.link-row:focus-visible .link-row-arrow {
   line-height: 1;
   transition: transform var(--motion-fast) var(--ease),
               color var(--motion-fast) var(--ease);
+}
+
+
+/* ---- Private menu — top-right dropdown -------------------------------
+   Native <details>/<summary> so it works without JS and is keyboard-
+   accessible out of the box. Trigger is a glass pill; the panel floats
+   absolutely below with the same translucent surface, hairline border,
+   and 8px blur as the link rows. The caret is a glyph swap (▾ → ▴) on
+   [open] rather than a rotation — the design system disallows rotation.
+   --------------------------------------------------------------------- */
+
+.menu {
+  position: relative;
+}
+
+.menu-trigger {
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-small);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--fg-primary);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  transition: background var(--motion-fast) var(--ease),
+              border-color var(--motion-fast) var(--ease);
+}
+
+.menu-trigger::-webkit-details-marker { display: none; }
+.menu-trigger::marker { content: ''; }
+
+.menu-trigger:hover,
+.menu[open] .menu-trigger,
+.menu-trigger:focus-visible {
+  background: var(--bg-surface-hover);
+  border-color: var(--border-strong);
+  outline: none;
+}
+
+.menu-caret {
+  color: var(--accent);
+  font-size: 0.7em;
+  line-height: 1;
+}
+
+.menu-caret::before { content: '▾'; }
+.menu[open] .menu-caret::before { content: '▴'; }
+
+.menu-panel {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: var(--space-2);
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 240px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hover);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.menu-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: var(--radius-small);
+  color: inherit;
+  text-decoration: none;
+  transition: background var(--motion-fast) var(--ease);
+}
+
+.menu-item:hover,
+.menu-item:focus-visible {
+  background: rgba(217, 119, 87, 0.10);
+  color: inherit;
+  outline: none;
+}
+
+.menu-item-title {
+  font-size: var(--fs-base);
+  font-weight: 500;
+  color: var(--fg-primary);
+}
+
+.menu-item-host {
+  font-size: var(--fs-xs);
+  color: var(--fg-muted);
 }
 
 
