@@ -223,11 +223,29 @@ a:hover { color: var(--accent-soft); }
 
 .contact {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-5);
-  margin-top: var(--space-3);
-  font-size: var(--fs-sm);
-  font-weight: 500;
+  margin-top: var(--space-2);
+}
+
+.contact a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-muted);
+  border-radius: var(--radius-small);
+  transition: color var(--motion-fast) var(--ease),
+              transform var(--motion-fast) var(--ease);
+}
+
+.contact a:hover,
+.contact a:focus-visible {
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.contact svg {
+  display: block;
 }
 
 .columns {
