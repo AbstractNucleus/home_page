@@ -3,6 +3,4 @@ services:
     build: .
     ports:
       - "6789:80"
-    volumes:
-      - ./status:/usr/share/nginx/html/status:ro
     restart: unless-stopped

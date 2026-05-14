@@ -99,21 +99,37 @@
       </main>
     </div>
     <script>
-      // Pull the server-side ping snapshot and toggle a status class per
-      // link. If the fetch fails or a host is missing from the file, the
-      // row stays in its default (unknown) state — the dot stays hidden.
-      fetch('/status/status.json?t=' + Date.now(), { cache: 'no-store' })
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (data) {
-          if (!data || !data.sites) return;
-          document.querySelectorAll('[data-host]').forEach(function (el) {
-            var info = data.sites[el.dataset.host];
-            if (!info) return;
-            el.classList.add(info.up ? 'is-up' : 'is-down');
-            el.title = info.up ? 'Online' : 'Offline';
+      // Probe each subdomain from the visitor's own browser. mode:no-cors
+      // makes the request cross-origin-safe at the cost of getting an
+      // opaque response — but we only need the binary signal: the
+      // promise resolves on any HTTP response (host is reachable from
+      // this network), rejects on DNS failure / connection refused / TLS
+      // error / timeout (not reachable). 5s timeout via AbortController.
+      // no-referrer + credentials:omit so we don't leak anything to
+      // the target hosts.
+      (function () {
+        function check(host) {
+          var ctrl = new AbortController();
+          var timer = setTimeout(function () { ctrl.abort(); }, 5000);
+          return fetch('https://' + host + '/?t=' + Date.now(), {
+            mode: 'no-cors',
+            cache: 'no-store',
+            credentials: 'omit',
+            referrerPolicy: 'no-referrer',
+            signal: ctrl.signal
+          })
+            .then(function () { return true; })
+            .catch(function () { return false; })
+            .then(function (up) { clearTimeout(timer); return up; });
+        }
+
+        document.querySelectorAll('[data-host]').forEach(function (el) {
+          check(el.dataset.host).then(function (up) {
+            el.classList.add(up ? 'is-up' : 'is-down');
+            el.title = up ? 'Online' : 'Offline';
           });
-        })
-        .catch(function () { /* silent */ });
+        });
+      })();
     </script>
   </body>
 </html>
