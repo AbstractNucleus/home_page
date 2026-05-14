@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="/css/styles.css?v=__CSS_VERSION__" />
   </head>
   <body>
+    <div class="cursor-glow" aria-hidden="true"></div>
     <div class="wrap">
       <header class="hero">
         <div class="hero-text">
@@ -98,6 +99,33 @@
 
       </main>
     </div>
+    <script>
+      // Cursor-following spotlight. rAF-throttled CSS-var writes so we
+      // don't fight the compositor; short-circuits on reduced-motion and
+      // on touch-primary devices (where there's no cursor to follow).
+      (function () {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        if (window.matchMedia('(hover: none)').matches) return;
+        var body = document.body;
+        var pendingX = 0, pendingY = 0, scheduled = false;
+        window.addEventListener('mousemove', function (e) {
+          pendingX = e.clientX;
+          pendingY = e.clientY;
+          if (!scheduled) {
+            scheduled = true;
+            requestAnimationFrame(function () {
+              body.style.setProperty('--mouse-x', pendingX + 'px');
+              body.style.setProperty('--mouse-y', pendingY + 'px');
+              if (!body.classList.contains('has-cursor')) body.classList.add('has-cursor');
+              scheduled = false;
+            });
+          }
+        }, { passive: true });
+        window.addEventListener('mouseleave', function () {
+          body.classList.remove('has-cursor');
+        });
+      })();
+    </script>
     <script>
       // Probe each subdomain from the visitor's own browser. mode:no-cors
       // makes the request cross-origin-safe at the cost of getting an

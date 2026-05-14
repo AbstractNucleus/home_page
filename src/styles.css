@@ -142,20 +142,94 @@ html, body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
+}
+
+/* Page colour lives on html so body's pseudo-elements can layer the
+   animated topography + glow above it without occluding each other. */
+html {
   background-color: var(--bg-page);
-  background-image:
-    radial-gradient(ellipse at 75% 70%, var(--bg-glow) 0%, transparent 60%),
-    url("/images/topography.jpg");
-  background-size: cover, cover;
-  background-position: center, center;
-  background-attachment: fixed, fixed;
-  background-repeat: no-repeat, no-repeat;
+}
+
+body {
   color: var(--fg-primary);
   font-family: var(--font-sans);
   font-size: var(--fs-base);
   line-height: var(--lh-base);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+
+/* ---- Animated backdrop -----------------------------------------------
+   Ported from the /projects page. Three layers, all behind content:
+     1. body::before — the topography texture, drifting + zooming slowly
+     2. body::after  — two warm radial glows wandering at different rates
+     3. .cursor-glow — a spotlight that follows the mouse (set in JS via
+                       --mouse-x / --mouse-y custom properties)
+   The design system has a "no background animation" rule; this is an
+   intentional override to match the rest of the noelkleen.com surface.
+   --------------------------------------------------------------------- */
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: -8%;
+  z-index: -1;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+body::before {
+  background: url("/images/topography.jpg") center / cover no-repeat;
+  opacity: 0.65;
+  animation: backdrop-drift 10s ease-in-out infinite alternate;
+}
+
+body::after {
+  background:
+    radial-gradient(ellipse 1100px 800px at 75% 70%,
+                    rgba(217, 119, 87, 0.20) 0%,
+                    rgba(58, 36, 27, 0) 55%),
+    radial-gradient(ellipse 700px 500px at 18% 22%,
+                    rgba(224, 139, 111, 0.13) 0%,
+                    rgba(58, 36, 27, 0) 55%);
+  background-size: 100% 100%, 100% 100%;
+  animation: glow-wander 6s ease-in-out infinite alternate,
+             glow-shift 4s ease-in-out infinite alternate;
+}
+
+@keyframes backdrop-drift {
+  0%   { transform: translate3d(-2%, -1%, 0) scale(1.04) rotate(-0.8deg); }
+  100% { transform: translate3d(2%, 1.5%, 0) scale(1.10) rotate(0.8deg); }
+}
+
+@keyframes glow-wander {
+  0%   { transform: translate3d(-3%, 2%, 0) scale(1.0); }
+  100% { transform: translate3d(4%, -2%, 0) scale(1.15); }
+}
+
+@keyframes glow-shift {
+  0%   { background-position: 0% 0%, 0% 0%; }
+  100% { background-position: 4% -3%, -5% 4%; }
+}
+
+.cursor-glow {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(circle 360px at var(--mouse-x, 50%) var(--mouse-y, 50%),
+              rgba(217, 119, 87, 0.22) 0%,
+              rgba(217, 119, 87, 0.08) 30%,
+              rgba(58, 36, 27, 0) 70%);
+  opacity: 0;
+  transition: opacity 400ms ease;
+  will-change: background;
+}
+
+body.has-cursor .cursor-glow {
+  opacity: 1;
 }
 
 ::selection { background: var(--accent); color: var(--bg-page); }
