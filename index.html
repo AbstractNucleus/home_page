@@ -41,14 +41,14 @@
           </summary>
           <ul class="menu-panel" role="menu">
             <li role="none">
-              <a class="menu-item" role="menuitem" href="https://analytics.noelkleen.com">
-                <span class="menu-item-title">Analytics</span>
+              <a class="menu-item" role="menuitem" href="https://analytics.noelkleen.com" data-host="analytics.noelkleen.com">
+                <span class="menu-item-title"><span class="status-dot" aria-hidden="true"></span>Analytics</span>
                 <span class="menu-item-host">analytics.noelkleen.com</span>
               </a>
             </li>
             <li role="none">
-              <a class="menu-item" role="menuitem" href="https://studio.noelkleen.com">
-                <span class="menu-item-title">Studio</span>
+              <a class="menu-item" role="menuitem" href="https://studio.noelkleen.com" data-host="studio.noelkleen.com">
+                <span class="menu-item-title"><span class="status-dot" aria-hidden="true"></span>Studio</span>
                 <span class="menu-item-host">studio.noelkleen.com</span>
               </a>
             </li>
@@ -61,9 +61,9 @@
           <h2 id="col-elsewhere" class="t-h2">Elsewhere</h2>
           <ul class="link-list">
             <li>
-              <a class="link-row" href="https://dynmap.noelkleen.com">
+              <a class="link-row" href="https://dynmap.noelkleen.com" data-host="dynmap.noelkleen.com">
                 <span class="link-row-text">
-                  <span class="link-row-title">Dynmap <span class="t-muted">· kobra-kollektivet</span></span>
+                  <span class="link-row-title"><span class="status-dot" aria-hidden="true"></span>Dynmap <span class="t-muted">· kobra-kollektivet</span></span>
                   <span class="link-row-host">dynmap.noelkleen.com</span>
                 </span>
                 <span class="link-row-arrow" aria-hidden="true">→</span>
@@ -76,18 +76,18 @@
           <h2 id="col-collaborations" class="t-h2">Collaborations</h2>
           <ul class="link-list">
             <li>
-              <a class="link-row" href="https://party.noelkleen.com">
+              <a class="link-row" href="https://party.noelkleen.com" data-host="party.noelkleen.com">
                 <span class="link-row-text">
-                  <span class="link-row-title">Party games</span>
+                  <span class="link-row-title"><span class="status-dot" aria-hidden="true"></span>Party games</span>
                   <span class="link-row-host">party.noelkleen.com</span>
                 </span>
                 <span class="link-row-arrow" aria-hidden="true">→</span>
               </a>
             </li>
             <li>
-              <a class="link-row" href="https://notes.noelkleen.com">
+              <a class="link-row" href="https://notes.noelkleen.com" data-host="notes.noelkleen.com">
                 <span class="link-row-text">
-                  <span class="link-row-title">Notes</span>
+                  <span class="link-row-title"><span class="status-dot" aria-hidden="true"></span>Notes</span>
                   <span class="link-row-host">notes.noelkleen.com</span>
                 </span>
                 <span class="link-row-arrow" aria-hidden="true">→</span>
@@ -98,5 +98,22 @@
 
       </main>
     </div>
+    <script>
+      // Pull the server-side ping snapshot and toggle a status class per
+      // link. If the fetch fails or a host is missing from the file, the
+      // row stays in its default (unknown) state — the dot stays hidden.
+      fetch('/status/status.json?t=' + Date.now(), { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+          if (!data || !data.sites) return;
+          document.querySelectorAll('[data-host]').forEach(function (el) {
+            var info = data.sites[el.dataset.host];
+            if (!info) return;
+            el.classList.add(info.up ? 'is-up' : 'is-down');
+            el.title = info.up ? 'Online' : 'Offline';
+          });
+        })
+        .catch(function () { /* silent */ });
+    </script>
   </body>
 </html>

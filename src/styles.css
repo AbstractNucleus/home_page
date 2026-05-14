@@ -454,6 +454,42 @@ a.link-row:focus-visible .link-row-arrow {
 }
 
 
+/* ---- Status dot -------------------------------------------------------
+   Tiny live/offline indicator, populated by the inline status script
+   from /status/status.json. Hidden by default so the page never lies
+   about a state it doesn't know; only appears once JS has tagged the
+   row with .is-up or .is-down.
+
+   Live → accent (terracotta), reusing the existing brand colour so the
+   palette stays intact (the design system bans status colour families).
+   Offline → stone-coloured dot plus a 0.6 opacity dim on the whole row,
+   so the signal carries without colour alone.
+   --------------------------------------------------------------------- */
+
+.status-dot {
+  display: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: 2px;
+  flex-shrink: 0;
+}
+
+.is-up .status-dot,
+.is-down .status-dot {
+  display: inline-block;
+}
+
+.is-up .status-dot   { background: var(--accent); }
+.is-down .status-dot { background: var(--fg-muted); }
+
+.link-row.is-down,
+.menu-item.is-down {
+  opacity: 0.6;
+}
+
+
 /* ---- Responsive -------------------------------------------------------- */
 
 @media (max-width: 760px) {
