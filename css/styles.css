@@ -62,8 +62,8 @@
   --hex-clay:         #d97757;
   --hex-clay-soft:    #cc785c;
 
-  --hex-surface:        rgba(38, 27, 20, 0.78);
-  --hex-surface-lift:   rgba(50, 35, 26, 0.88);
+  --hex-surface:        rgba(38, 27, 20, 0.14);
+  --hex-surface-lift:   rgba(50, 35, 26, 0.30);
   --hex-border:         rgba(204, 120, 92, 0.18);
   --hex-border-strong:  rgba(217, 119, 87, 0.45);
 }
@@ -130,8 +130,15 @@
   --space-16: 64px;
   --space-20: 80px;
 
-  --motion-fast: 180ms;
-  --ease:        ease;
+  --motion-fast:   180ms;
+  --motion-smooth: 320ms;
+  --ease:          ease;
+  /* Refined "fast-out / slow-end" curve — the small movements (arrows,
+     underline wipes, chip materialisations) land softer with this than
+     with plain `ease`, without feeling sluggish. Used for hover state
+     transitions on every button; the press-down on :active stays on
+     --motion-fast so clicks feel immediate. */
+  --ease-out:      cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 
@@ -313,6 +320,13 @@ a:hover { color: var(--accent-soft); }
   row-gap: var(--space-2);
 }
 
+/* The "Projects" jump-link beside the title. Display-size inline link;
+   doesn't try to be a chip. Refinement: an animated underline that wipes
+   in from the left (scaleX from 0, transform-origin left) — a piece of
+   the page's terracotta accent literally appearing under the word as you
+   approach it. The arrow drifts right with a small overshoot via the
+   custom easing. The underline sits on the word only, not under the
+   arrow, so the arrow's motion stays unambiguous. */
 .hero-projects {
   display: inline-flex;
   align-items: baseline;
@@ -323,7 +337,31 @@ a:hover { color: var(--accent-soft); }
   letter-spacing: -0.015em;
   color: var(--accent);
   text-decoration: none;
-  transition: color var(--motion-fast) var(--ease);
+  transition: color var(--motion-fast) var(--ease-out);
+}
+
+.hero-projects > span:first-child {
+  position: relative;
+  display: inline-block;
+}
+
+.hero-projects > span:first-child::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.05em;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.6;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--motion-smooth) var(--ease-out);
+}
+
+.hero-projects:hover > span:first-child::after,
+.hero-projects:focus-visible > span:first-child::after {
+  transform: scaleX(1);
 }
 
 .hero-projects:hover,
@@ -334,35 +372,53 @@ a:hover { color: var(--accent-soft); }
 
 .hero-projects-arrow {
   display: inline-block;
-  transition: transform var(--motion-fast) var(--ease);
+  transition: transform var(--motion-smooth) var(--ease-out);
 }
 
 .hero-projects:hover .hero-projects-arrow,
 .hero-projects:focus-visible .hero-projects-arrow {
-  transform: translateX(4px);
+  transform: translateX(3px);
 }
 
 .contact {
   display: flex;
   align-items: center;
-  gap: var(--space-5);
+  gap: var(--space-2);
   margin-top: var(--space-2);
 }
 
+/* Icon chip — 36×36 hit target with a glass backdrop that fades in on
+   hover. Resting state is transparent so the icons feel "loose" on the
+   page; hover materialises a flat chip with a hairline border. The
+   icon colour climbs muted → accent on the same curve. */
 .contact a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 36px;
+  height: 36px;
   color: var(--fg-muted);
-  border-radius: var(--radius-small);
-  transition: color var(--motion-fast) var(--ease),
-              transform var(--motion-fast) var(--ease);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  transition: color var(--motion-smooth) var(--ease-out),
+              background var(--motion-smooth) var(--ease-out),
+              border-color var(--motion-smooth) var(--ease-out),
+              transform var(--motion-fast) var(--ease-out);
 }
 
 .contact a:hover,
 .contact a:focus-visible {
   color: var(--accent);
+  background: var(--bg-surface);
+  border-color: var(--border-soft);
   transform: translateY(-1px);
+  outline: none;
+}
+
+.contact a:active {
+  transform: translateY(0);
+  transition-duration: var(--motion-fast);
 }
 
 .contact svg {
@@ -408,19 +464,19 @@ a:hover { color: var(--accent-soft); }
   border: 1px solid var(--border-soft);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   color: inherit;
   text-decoration: none;
-  transition: transform var(--motion-fast) var(--ease),
-              box-shadow var(--motion-fast) var(--ease),
-              background var(--motion-fast) var(--ease),
-              border-color var(--motion-fast) var(--ease);
+  transition: transform var(--motion-smooth) var(--ease-out),
+              box-shadow var(--motion-smooth) var(--ease-out),
+              background var(--motion-smooth) var(--ease-out),
+              border-color var(--motion-smooth) var(--ease-out);
 }
 
 a.link-row:hover,
 a.link-row:focus-visible {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   box-shadow: var(--shadow-hover);
   background: var(--bg-surface-hover);
   border-color: var(--border-strong);
@@ -431,6 +487,11 @@ a.link-row:hover .link-row-arrow,
 a.link-row:focus-visible .link-row-arrow {
   transform: translateX(2px);
   color: var(--accent-soft);
+}
+
+a.link-row:active {
+  transform: translateY(0);
+  transition-duration: var(--motion-fast);
 }
 
 .link-row-text {
@@ -456,8 +517,8 @@ a.link-row:focus-visible .link-row-arrow {
   color: var(--accent);
   font-size: var(--fs-lg);
   line-height: 1;
-  transition: transform var(--motion-fast) var(--ease),
-              color var(--motion-fast) var(--ease);
+  transition: transform var(--motion-smooth) var(--ease-out),
+              color var(--motion-smooth) var(--ease-out);
 }
 
 
@@ -480,6 +541,9 @@ a.link-row:focus-visible .link-row-arrow {
   position: relative;
 }
 
+/* Trigger pill — glass chip. Slight translateY-press on :active so the
+   click feels physical. When the menu is [open] the chip stays in the
+   hover state so it reads as the active element. */
 .pill {
   list-style: none;
   cursor: pointer;
@@ -492,15 +556,16 @@ a.link-row:focus-visible .link-row-arrow {
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-small);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   color: var(--fg-primary);
   font-size: var(--fs-sm);
   font-weight: 500;
   letter-spacing: -0.005em;
   text-decoration: none;
-  transition: background var(--motion-fast) var(--ease),
-              border-color var(--motion-fast) var(--ease);
+  transition: background var(--motion-smooth) var(--ease-out),
+              border-color var(--motion-smooth) var(--ease-out),
+              transform var(--motion-fast) var(--ease-out);
 }
 
 .pill::-webkit-details-marker { display: none; }
@@ -514,14 +579,24 @@ a.link-row:focus-visible .link-row-arrow {
   outline: none;
 }
 
+.pill:active {
+  transform: translateY(1px);
+  transition-duration: var(--motion-fast);
+}
+
 .menu-caret {
   color: var(--accent);
   font-size: 0.7em;
   line-height: 1;
+  transition: color var(--motion-smooth) var(--ease-out);
 }
 
 .menu-caret::before { content: '▾'; }
 .menu[open] .menu-caret::before { content: '▴'; }
+
+.menu[open] .menu-caret {
+  color: var(--fg-primary);
+}
 
 .menu-panel {
   list-style: none;
@@ -535,14 +610,16 @@ a.link-row:focus-visible .link-row-arrow {
   border: 1px solid var(--border-soft);
   border-radius: var(--radius);
   box-shadow: var(--shadow-hover);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   z-index: 10;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
+/* Menu rows. Soft accent wash on hover — kept in place (no translate)
+   so they don't outdent past the rest of the list. */
 .menu-item {
   display: flex;
   flex-direction: column;
@@ -551,7 +628,7 @@ a.link-row:focus-visible .link-row-arrow {
   border-radius: var(--radius-small);
   color: inherit;
   text-decoration: none;
-  transition: background var(--motion-fast) var(--ease);
+  transition: background var(--motion-smooth) var(--ease-out);
 }
 
 .menu-item:hover,
@@ -600,8 +677,23 @@ a.link-row:focus-visible .link-row-arrow {
   display: inline-block;
 }
 
-.is-up .status-dot   { background: var(--accent); }
+/* Live → accent, with a slow 4s breath so "online" reads as alive.
+   Smaller spread + lower alpha than the first cut — the eye picks up
+   on the pulse only when looking at the dot. Reduced-motion users get
+   the static dot via the global rule below. */
+.is-up .status-dot {
+  background: var(--accent);
+  box-shadow: 0 0 0 0 rgba(217, 119, 87, 0.35);
+  animation: status-pulse 4s ease-out infinite;
+}
+
 .is-down .status-dot { background: var(--fg-muted); }
+
+@keyframes status-pulse {
+  0%   { box-shadow: 0 0 0 0   rgba(217, 119, 87, 0.35); }
+  80%  { box-shadow: 0 0 0 4px rgba(217, 119, 87, 0); }
+  100% { box-shadow: 0 0 0 0   rgba(217, 119, 87, 0); }
+}
 
 .link-row.is-down,
 .menu-item.is-down {
