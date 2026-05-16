@@ -19,7 +19,7 @@ Then open <http://localhost:6789>. In prod it sits behind a reverse proxy that h
 ```
 .
 ├── index.html        the page
-├── src/styles.css    tokens + site styles, one file
+├── css/styles.css    tokens + site styles, one file
 ├── fonts/            Inter Tight woff2, self-hosted
 ├── images/           the topography texture under the page glow
 ├── Dockerfile        build then serve

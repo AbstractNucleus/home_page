@@ -305,6 +305,43 @@ a:hover { color: var(--accent-soft); }
   flex: 1;
 }
 
+.hero-headline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--space-6);
+  row-gap: var(--space-2);
+}
+
+.hero-projects {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 400;
+  line-height: var(--lh-tight);
+  letter-spacing: -0.015em;
+  color: var(--accent);
+  text-decoration: none;
+  transition: color var(--motion-fast) var(--ease);
+}
+
+.hero-projects:hover,
+.hero-projects:focus-visible {
+  color: var(--accent-soft);
+  outline: none;
+}
+
+.hero-projects-arrow {
+  display: inline-block;
+  transition: transform var(--motion-fast) var(--ease);
+}
+
+.hero-projects:hover .hero-projects-arrow,
+.hero-projects:focus-visible .hero-projects-arrow {
+  transform: translateX(4px);
+}
+
 .contact {
   display: flex;
   align-items: center;
@@ -424,7 +461,7 @@ a.link-row:focus-visible .link-row-arrow {
 }
 
 
-/* ---- Private menu — top-right dropdown -------------------------------
+/* ---- Private dropdown — top-right glass pill -------------------------
    Native <details>/<summary> so it works without JS and is keyboard-
    accessible out of the box. Trigger is a glass pill; the panel floats
    absolutely below with the same translucent surface, hairline border,
@@ -432,11 +469,18 @@ a.link-row:focus-visible .link-row-arrow {
    [open] rather than a rotation — the design system disallows rotation.
    --------------------------------------------------------------------- */
 
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
 .menu {
   position: relative;
 }
 
-.menu-trigger {
+.pill {
   list-style: none;
   cursor: pointer;
   user-select: none;
@@ -454,16 +498,17 @@ a.link-row:focus-visible .link-row-arrow {
   font-size: var(--fs-sm);
   font-weight: 500;
   letter-spacing: -0.005em;
+  text-decoration: none;
   transition: background var(--motion-fast) var(--ease),
               border-color var(--motion-fast) var(--ease);
 }
 
-.menu-trigger::-webkit-details-marker { display: none; }
-.menu-trigger::marker { content: ''; }
+.pill::-webkit-details-marker { display: none; }
+.pill::marker { content: ''; }
 
-.menu-trigger:hover,
-.menu[open] .menu-trigger,
-.menu-trigger:focus-visible {
+.pill:hover,
+.menu[open] .pill,
+.pill:focus-visible {
   background: var(--bg-surface-hover);
   border-color: var(--border-strong);
   outline: none;

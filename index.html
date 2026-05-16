@@ -14,7 +14,13 @@
     <div class="wrap">
       <header class="hero">
         <div class="hero-text">
-          <h1 class="t-display">Noel Kleen</h1>
+          <div class="hero-headline">
+            <h1 class="t-display">Noel Kleen</h1>
+            <a class="hero-projects" href="https://projects.noelkleen.com" data-host="projects.noelkleen.com">
+              <span>Projects</span>
+              <span class="hero-projects-arrow" aria-hidden="true">→</span>
+            </a>
+          </div>
           <nav class="contact" aria-label="contact">
           <a href="https://github.com/AbstractNucleus" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -35,26 +41,34 @@
         </nav>
         </div>
 
-        <details class="menu" hidden>
-          <summary class="menu-trigger">
-            <span>Private</span>
-            <span class="menu-caret" aria-hidden="true"></span>
-          </summary>
-          <ul class="menu-panel" role="menu">
-            <li role="none">
-              <a class="menu-item" role="menuitem" href="https://analytics.noelkleen.com" data-host="analytics.noelkleen.com">
-                <span class="menu-item-title"><span class="status-dot" aria-hidden="true"></span>Analytics</span>
-                <span class="menu-item-host">analytics.noelkleen.com</span>
-              </a>
-            </li>
-            <li role="none">
-              <a class="menu-item" role="menuitem" href="https://studio.noelkleen.com" data-host="studio.noelkleen.com">
-                <span class="menu-item-title"><span class="status-dot" aria-hidden="true"></span>Studio</span>
-                <span class="menu-item-host">studio.noelkleen.com</span>
-              </a>
-            </li>
-          </ul>
-        </details>
+        <div class="hero-actions">
+          <details class="menu" hidden>
+            <summary class="pill">
+              <span>Private</span>
+              <span class="menu-caret" aria-hidden="true"></span>
+            </summary>
+            <ul class="menu-panel" role="menu">
+              <li role="none">
+                <a class="menu-item" role="menuitem" href="https://analytics.noelkleen.com" data-host="analytics.noelkleen.com">
+                  <span class="menu-item-title"><span class="status-dot" aria-hidden="true"></span>Analytics</span>
+                  <span class="menu-item-host">analytics.noelkleen.com</span>
+                </a>
+              </li>
+              <li role="none">
+                <a class="menu-item" role="menuitem" href="https://studio.noelkleen.com" data-host="studio.noelkleen.com">
+                  <span class="menu-item-title"><span class="status-dot" aria-hidden="true"></span>Studio</span>
+                  <span class="menu-item-host">studio.noelkleen.com</span>
+                </a>
+              </li>
+              <li role="none">
+                <a class="menu-item" role="menuitem" href="https://finance.noelkleen.com" data-host="finance.noelkleen.com">
+                  <span class="menu-item-title"><span class="status-dot" aria-hidden="true"></span>Finance</span>
+                  <span class="menu-item-host">finance.noelkleen.com</span>
+                </a>
+              </li>
+            </ul>
+          </details>
+        </div>
       </header>
 
       <main class="columns">
