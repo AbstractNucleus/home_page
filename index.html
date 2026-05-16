@@ -35,7 +35,7 @@
         </nav>
         </div>
 
-        <details class="menu">
+        <details class="menu" hidden>
           <summary class="menu-trigger">
             <span>Private</span>
             <span class="menu-caret" aria-hidden="true"></span>
@@ -155,6 +155,10 @@
           check(el.dataset.host).then(function (up) {
             el.classList.add(up ? 'is-up' : 'is-down');
             el.title = up ? 'Online' : 'Offline';
+            if (up) {
+              var menu = el.closest('.menu');
+              if (menu) menu.hidden = false;
+            }
           });
         });
       })();
