@@ -1,8 +1,8 @@
 /* =========================================================================
    noelkleen.com — styles
-   Built on the Hearth design system (D:/code/design). Warm dark editorial:
-   cocoa-pit page with a terracotta glow over a topography texture, glass
-   panels with hairline accent borders, Inter Tight throughout, one accent.
+   Built on the Hearth design system. Warm dark editorial: cocoa-pit page
+   with a terracotta glow over a topography texture, glass panels with
+   hairline accent borders, Inter Tight throughout, one accent.
 
    Single CSS file so the build is one hash, one link. Font and image paths
    are absolute (`/fonts/...`, `/images/...`) so this stylesheet can be
