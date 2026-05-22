@@ -4,7 +4,7 @@ Source for my personal homepage at [noelkleen.com](https://noelkleen.com). One p
 
 ## Stack
 
-Static HTML and one CSS file, served by nginx out of a Docker build. The CSS is built on my own Hearth design system: warm dark editorial, cocoa-pit page with a terracotta glow over a topography texture, glass panels, Inter Tight throughout. Fonts and the texture are self-hosted. The build stamps a content hash onto `styles.css` so browsers don't hang onto a stale version.
+Static HTML and one CSS file, served by nginx out of a Docker build. Fonts and the page texture are self-hosted. The build stamps a content hash onto `styles.css` so browsers don't hang onto a stale version.
 
 ## Running it
 
