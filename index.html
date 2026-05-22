@@ -186,9 +186,15 @@
         }
 
         document.querySelectorAll('[data-host]').forEach(function (el) {
+          el.classList.add('is-checking');
           check(el.dataset.host).then(function (up) {
+            el.classList.remove('is-checking');
             el.classList.add(up ? 'is-up' : 'is-down');
             el.title = up ? 'Online' : 'Offline';
+            var srStatus = document.createElement('span');
+            srStatus.className = 'sr-only';
+            srStatus.textContent = up ? ' (online)' : ' (offline)';
+            el.appendChild(srStatus);
             if (up) {
               var menu = el.closest('.menu');
               if (menu) menu.hidden = false;
