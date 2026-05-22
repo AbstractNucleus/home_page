@@ -521,6 +521,27 @@ a.link-row:active {
               color var(--motion-smooth) var(--ease-out);
 }
 
+.link-credit {
+  margin: 6px 18px 0;
+  font-size: var(--fs-xs);
+  color: var(--fg-muted);
+}
+
+.link-credit a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--border-soft);
+  text-underline-offset: 2px;
+  transition: color var(--motion-smooth) var(--ease-out),
+              text-decoration-color var(--motion-smooth) var(--ease-out);
+}
+
+.link-credit a:hover,
+.link-credit a:focus-visible {
+  color: var(--accent-soft);
+  text-decoration-color: var(--accent-soft);
+}
+
 
 /* ---- Private dropdown — top-right glass pill -------------------------
    Native <details>/<summary> so it works without JS and is keyboard-
