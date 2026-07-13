@@ -994,8 +994,7 @@ a.link-row:focus-visible .link-row-sheen::before {
 }
 
 .link-row.is-down,
-.menu-item.is-down,
-.hero-projects.is-down {
+.menu-item.is-down {
   opacity: 0.6;
 }
 
@@ -1024,4 +1023,120 @@ a.link-row:focus-visible .link-row-sheen::before {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+
+/* ---- Projects page ----------------------------------------------------
+   The /projects gallery: a fixed home link back to the index, and a grid
+   of cards for the things I've built. Cards are the design system's
+   signature glass panel; every value here consumes the shared tokens
+   above, so the gallery reads as the same site as the home page. */
+
+.home-link {
+  position: fixed;
+  top: var(--space-5);
+  left: var(--space-6);
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--fg-muted);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color var(--motion-fast) var(--ease);
+}
+
+.home-link:hover,
+.home-link:focus-visible {
+  color: var(--accent);
+}
+
+.home-link__arrow {
+  display: inline-block;
+  transition: transform var(--motion-fast) var(--ease);
+}
+
+.home-link:hover .home-link__arrow {
+  transform: translateX(-2px);
+}
+
+main.projects {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--space-20) var(--space-6);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 22px;
+}
+
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  transition: transform var(--motion-fast) var(--ease),
+              box-shadow var(--motion-fast) var(--ease),
+              background var(--motion-fast) var(--ease),
+              border-color var(--motion-fast) var(--ease);
+}
+
+a.card:hover,
+a.card:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-hover);
+  background: var(--bg-surface-hover);
+  border-color: var(--border-strong);
+  outline: none;
+}
+
+.card-image {
+  aspect-ratio: 16 / 9;
+  background-color: #2a1810;
+  background-image: linear-gradient(135deg, #3a1f12 0%, #1f120a 100%);
+  background-size: cover;
+  background-position: center;
+}
+
+.card-body {
+  padding: 18px 20px 22px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.card-title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--fg-primary);
+}
+
+.card-desc {
+  margin: 0;
+  color: var(--fg-muted);
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
+}
+
+.card-link {
+  margin-top: var(--space-4);
+  color: var(--accent);
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  font-weight: 500;
 }

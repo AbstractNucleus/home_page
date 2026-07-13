@@ -1,0 +1,21 @@
+{
+  "projects": [
+    {
+      "title": "Terminal Launcher",
+      "description": "Keyboard-driven launcher: fuzzy-search saved directories and SSH hosts, open them in WezTerm with a hotkey.",
+      "image": "/images/terminal_launcher.jpg?v=2",
+      "url": "https://github.com/AbstractNucleus/terminal_launcher"
+    },
+    {
+      "title": "Auto Clicker",
+      "description": "Precise Windows autoclicker with global hotkeys, built with Python 3.13 and PySide6.",
+      "image": "/images/auto_clicker.jpg",
+      "url": "https://github.com/AbstractNucleus/auto_clicker"
+    },
+    {
+      "title": "Home Page",
+      "description": "Source for noelkleen.com, my personal home page.",
+      "url": "https://github.com/AbstractNucleus/home_page"
+    }
+  ]
+}
