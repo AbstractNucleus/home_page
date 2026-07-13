@@ -16,14 +16,16 @@
   </head>
   <body>
     <div class="cursor-glow" aria-hidden="true"></div>
+    <canvas class="embers" aria-hidden="true"></canvas>
     <div class="wrap">
       <header class="hero">
         <div class="hero-text">
           <div class="hero-headline">
-            <h1 class="t-display">Noel Kleen</h1>
+            <h1 class="t-display"><span class="hero-sheen">Noel Kleen<span class="hero-sheen-shine" aria-hidden="true"><span class="hero-sheen-inner">Noel Kleen</span></span></span></h1>
             <a class="hero-projects" href="https://projects.noelkleen.com" data-host="projects.noelkleen.com">
-              <span>Projects</span>
-              <span class="hero-projects-arrow" aria-hidden="true">→</span>
+              <span class="sr-only">Projects</span>
+              <span class="hero-projects-word" aria-hidden="true"><span style="--i:0">P</span><span style="--i:1">r</span><span style="--i:2">o</span><span style="--i:3">j</span><span style="--i:4">e</span><span style="--i:5">c</span><span style="--i:6">t</span><span style="--i:7">s</span></span>
+              <span class="hero-projects-arrow" aria-hidden="true" style="--i:8">→</span>
             </a>
           </div>
           <nav class="contact" aria-label="contact">
@@ -93,6 +95,7 @@
                   <span class="link-row-host">dynmap.noelkleen.com</span>
                 </span>
                 <span class="link-row-arrow" aria-hidden="true">→</span>
+                <span class="link-row-sheen" aria-hidden="true"></span>
               </a>
             </li>
           </ul>
@@ -108,6 +111,7 @@
                   <span class="link-row-host">party.noelkleen.com</span>
                 </span>
                 <span class="link-row-arrow" aria-hidden="true">→</span>
+                <span class="link-row-sheen" aria-hidden="true"></span>
               </a>
               <p class="link-credit">with <a href="https://github.com/Trockeltum" target="_blank" rel="noopener noreferrer">@AbbeBreitholtz</a></p>
             </li>
@@ -118,6 +122,7 @@
                   <span class="link-row-host">notes.noelkleen.com</span>
                 </span>
                 <span class="link-row-arrow" aria-hidden="true">→</span>
+                <span class="link-row-sheen" aria-hidden="true"></span>
               </a>
               <p class="link-credit">with <a href="https://github.com/Trockeltum" target="_blank" rel="noopener noreferrer">@AbbeBreitholtz</a></p>
             </li>
@@ -128,6 +133,7 @@
                   <span class="link-row-host">drinkbook.noelkleen.com</span>
                 </span>
                 <span class="link-row-arrow" aria-hidden="true">→</span>
+                <span class="link-row-sheen" aria-hidden="true"></span>
               </a>
               <p class="link-credit">with <a href="https://github.com/Trockeltum" target="_blank" rel="noopener noreferrer">@AbbeBreitholtz</a></p>
             </li>
@@ -204,6 +210,189 @@
             }
           });
         });
+      })();
+    </script>
+    <script>
+      // The animated border beam on the link rows needs @property to
+      // interpolate its conic-gradient angle; without it the beam can't
+      // spin, so tag <html> and let the .no-at-property rules swap in a
+      // static accent gradient instead.
+      if (!(window.CSS && CSS.registerProperty)) {
+        document.documentElement.classList.add('no-at-property');
+      }
+    </script>
+    <script>
+      // Hearth embers — sparse motes drifting up from the bottom of the
+      // viewport on a fixed canvas behind the content. Pre-rendered glow
+      // sprites so nothing allocates in the frame loop, DPR capped at 2,
+      // and the rise is clamped so the upper third of the screen stays
+      // clean under the text. The loop stops while the tab is hidden;
+      // reduced-motion gets a single static frame.
+      (function () {
+        var canvas = document.querySelector('.embers');
+        if (!canvas || !canvas.getContext) return;
+        var ctx = canvas.getContext('2d');
+        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        // clay, clay (weighted), clay-soft, amber (sparingly)
+        var PALETTE = ['217,119,87', '217,119,87', '204,120,92', '232,168,124'];
+
+        var w = 0, h = 0;
+        var embers = [];
+        var sprites = [];
+        var flickerWait = 4 + Math.random() * 6;
+
+        function rand(a, b) { return a + Math.random() * (b - a); }
+
+        // Pre-rendered soft radial glow, one per palette colour.
+        function makeSprite(rgb) {
+          var s = document.createElement('canvas');
+          s.width = 64;
+          s.height = 64;
+          var sc = s.getContext('2d');
+          var g = sc.createRadialGradient(32, 32, 0, 32, 32, 32);
+          g.addColorStop(0, 'rgba(' + rgb + ',0.9)');
+          g.addColorStop(0.3, 'rgba(' + rgb + ',0.26)');
+          g.addColorStop(1, 'rgba(' + rgb + ',0)');
+          sc.fillStyle = g;
+          sc.fillRect(0, 0, 64, 64);
+          return s;
+        }
+        for (var p = 0; p < PALETTE.length; p++) sprites.push(makeSprite(PALETTE[p]));
+
+        function resize() {
+          w = Math.max(1, window.innerWidth);
+          h = Math.max(1, window.innerHeight);
+          var dpr = Math.min(window.devicePixelRatio || 1, 2);
+          canvas.width = Math.round(w * dpr);
+          canvas.height = Math.round(h * dpr);
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        function spawn(e, scatter) {
+          e.x0 = rand(w * 0.04, w * 0.96);
+          e.y0 = rand(h * 0.72, h * 1.02);
+          e.speed = rand(12, 25); // px/s upward drift
+          // Clamp the climb so nothing ever crosses the top third.
+          var maxRise = Math.max(40, e.y0 - h * 0.32);
+          e.rise = Math.min(rand(h * 0.18, h * 0.42), maxRise);
+          e.life = e.rise / e.speed; // seconds (~4-13s)
+          e.age = scatter ? Math.random() * e.life : 0;
+          e.amp = rand(5, 13);
+          e.sway = rand(0.35, 0.8); // rad/s
+          e.phase = rand(0, Math.PI * 2);
+          e.core = rand(0.6, 1.5);
+          e.glow = e.core * rand(4, 6.5);
+          e.ci = (Math.random() * PALETTE.length) | 0;
+          e.peak = rand(0.45, 0.8); // core alpha ceiling
+          e.flicker = 0;
+          return e;
+        }
+
+        function initEmbers(scatter) {
+          var count = Math.max(14, Math.min(40, Math.round(w / 24)));
+          embers.length = 0;
+          for (var i = 0; i < count; i++) embers.push(spawn({}, scatter));
+        }
+
+        // Fade in over the first 18% of life, out over the last 32%.
+        function envelope(t) {
+          var env = Math.min(Math.min(t / 0.18, 1), Math.min((1 - t) / 0.32, 1));
+          if (env <= 0) return 0;
+          return env * env * (3 - 2 * env);
+        }
+
+        function update(dt) {
+          for (var i = 0; i < embers.length; i++) {
+            var e = embers[i];
+            e.age += dt;
+            if (e.age >= e.life) spawn(e, false);
+            if (e.flicker > 0) e.flicker = Math.max(0, e.flicker - dt / 1.1);
+          }
+          flickerWait -= dt;
+          if (flickerWait <= 0 && embers.length) {
+            embers[(Math.random() * embers.length) | 0].flicker = 1;
+            flickerWait = rand(5, 11);
+          }
+        }
+
+        function draw() {
+          ctx.clearRect(0, 0, w, h);
+          ctx.globalCompositeOperation = 'lighter';
+          for (var i = 0; i < embers.length; i++) {
+            var e = embers[i];
+            var env = envelope(e.age / e.life);
+            if (env <= 0.01) continue;
+            var boost = 1 + Math.sin(Math.PI * e.flicker) * 1.3;
+            var x = e.x0 + Math.sin(e.age * e.sway + e.phase) * e.amp;
+            var y = e.y0 - e.speed * e.age;
+            var gr = e.glow * (1 + e.flicker * 0.4);
+
+            ctx.globalAlpha = Math.min(0.16 * env * boost, 0.42);
+            ctx.drawImage(sprites[e.ci], x - gr, y - gr, gr * 2, gr * 2);
+
+            ctx.globalAlpha = Math.min(e.peak * env * boost, 0.95);
+            ctx.fillStyle = 'rgb(' + PALETTE[e.ci] + ')';
+            ctx.beginPath();
+            ctx.arc(x, y, e.core, 0, 6.2832);
+            ctx.fill();
+          }
+          ctx.globalAlpha = 1;
+          ctx.globalCompositeOperation = 'source-over';
+        }
+
+        resize();
+        initEmbers(true);
+        draw();
+
+        if (reduced) {
+          // Static frame only; just re-render if the viewport changes.
+          window.addEventListener('resize', function () {
+            resize();
+            initEmbers(true);
+            draw();
+          });
+          return;
+        }
+
+        var running = false;
+        var rafId = 0;
+        var last = 0;
+
+        function frame(ts) {
+          rafId = 0;
+          if (!running) return;
+          var dt = Math.min((ts - last) / 1000, 0.05);
+          last = ts;
+          update(dt);
+          draw();
+          rafId = requestAnimationFrame(frame);
+        }
+
+        function setRunning(on) {
+          if (on === running) return;
+          running = on;
+          if (on) {
+            last = performance.now();
+            if (!rafId) rafId = requestAnimationFrame(frame);
+          } else if (rafId) {
+            cancelAnimationFrame(rafId);
+            rafId = 0;
+          }
+        }
+
+        document.addEventListener('visibilitychange', function () {
+          setRunning(!document.hidden);
+        });
+
+        window.addEventListener('resize', function () {
+          var prevW = w, prevH = h;
+          resize();
+          if (Math.abs(w - prevW) > 1 || Math.abs(h - prevH) > 1) initEmbers(true);
+          if (!running) draw();
+        });
+
+        setRunning(!document.hidden);
       })();
     </script>
   </body>

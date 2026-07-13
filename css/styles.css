@@ -139,6 +139,9 @@
      transitions on every button; the press-down on :active stays on
      --motion-fast so clicks feel immediate. */
   --ease-out:      cubic-bezier(0.32, 0.72, 0, 1);
+  /* Overshoot spring — a gentle bounce past the target then settle. Used
+     for the arrival dot-pop and the Projects underline wipe-in. */
+  --ease-spring:   cubic-bezier(0.34, 1.35, 0.5, 1);
 }
 
 
@@ -168,42 +171,44 @@ body {
 
 
 /* ---- Animated backdrop -----------------------------------------------
-   Ported from the /projects page. Three layers, all behind content:
+   Ported from the /projects page. Four layers, all behind content:
      1. body::before — the topography texture, drifting + zooming slowly
-     2. body::after  — two warm radial glows wandering at different rates
-     3. .cursor-glow — a spotlight that follows the mouse (set in JS via
+     2. .embers      — a fixed canvas of ember motes rising from the
+                       bottom edge (driven by the inline embers script)
+     3. body::after  — a static banked-fire glow pooled along the bottom
+     4. .cursor-glow — a spotlight that follows the mouse (set in JS via
                        --mouse-x / --mouse-y custom properties)
    The design system has a "no background animation" rule; this is an
    intentional override to match the rest of the noelkleen.com surface.
+   The old pair of wandering radial glows moved out when the embers
+   arrived — two kinds of ambient drift in one backdrop read as busy.
    --------------------------------------------------------------------- */
 
 body::before,
 body::after {
   content: "";
   position: fixed;
-  inset: -8%;
   z-index: -1;
   pointer-events: none;
-  will-change: transform, opacity;
 }
 
 body::before {
+  inset: -8%;
   background: url("/images/topography.jpg") center / cover no-repeat;
   opacity: 0.65;
+  will-change: transform, opacity;
   animation: backdrop-drift 10s ease-in-out infinite alternate;
 }
 
 body::after {
+  inset: 0;
   background:
-    radial-gradient(ellipse 1100px 800px at 75% 70%,
-                    rgba(217, 119, 87, 0.20) 0%,
-                    rgba(58, 36, 27, 0) 55%),
-    radial-gradient(ellipse 700px 500px at 18% 22%,
-                    rgba(224, 139, 111, 0.13) 0%,
-                    rgba(58, 36, 27, 0) 55%);
-  background-size: 100% 100%, 100% 100%;
-  animation: glow-wander 6s ease-in-out infinite alternate,
-             glow-shift 4s ease-in-out infinite alternate;
+    radial-gradient(90% 55% at 50% 112%,
+                    rgba(217, 119, 87, 0.16) 0%,
+                    rgba(217, 119, 87, 0) 65%),
+    radial-gradient(45% 28% at 24% 108%,
+                    rgba(217, 119, 87, 0.09) 0%,
+                    rgba(217, 119, 87, 0) 70%);
 }
 
 @keyframes backdrop-drift {
@@ -211,14 +216,13 @@ body::after {
   100% { transform: translate3d(2%, 1.5%, 0) scale(1.10) rotate(0.8deg); }
 }
 
-@keyframes glow-wander {
-  0%   { transform: translate3d(-3%, 2%, 0) scale(1.0); }
-  100% { transform: translate3d(4%, -2%, 0) scale(1.15); }
-}
-
-@keyframes glow-shift {
-  0%   { background-position: 0% 0%, 0% 0%; }
-  100% { background-position: 4% -3%, -5% 4%; }
+.embers {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
 }
 
 .cursor-glow {
@@ -237,6 +241,63 @@ body::after {
 
 body.has-cursor .cursor-glow {
   opacity: 1;
+}
+
+
+/* ---- Arrival choreography ---------------------------------------------
+   One-shot load sequence, pure CSS: the name settles out of a blur while
+   its tracking tightens, the Projects link and contact icons follow, and
+   the link cards stagger up in a wave down both columns. Status dots pop
+   separately, when their probe resolves (see the status-dot section).
+   Everything runs on transform/opacity/filter except the heading's
+   tracking settle — one element, 700ms, once per load. `both` keeps each
+   element hidden until its beat; the global reduced-motion rule collapses
+   the whole show into an instant landing.
+   --------------------------------------------------------------------- */
+
+.hero .t-display {
+  animation: arrive-heading 700ms var(--ease-out) both;
+}
+
+.hero-projects {
+  animation: arrive-rise 620ms var(--ease-out) 150ms both;
+}
+
+.contact {
+  animation: arrive-rise 620ms var(--ease-out) 240ms both;
+}
+
+.columns .t-h2 {
+  animation: arrive-rise 620ms var(--ease-out) 300ms both;
+}
+
+.link-list li {
+  animation: arrive-card 560ms var(--ease-out) both;
+}
+
+.link-list li:nth-child(1) { animation-delay: 380ms; }
+.link-list li:nth-child(2) { animation-delay: 460ms; }
+.link-list li:nth-child(3) { animation-delay: 540ms; }
+
+/* The Private menu unhides only after a probe succeeds; animations don't
+   run while an element is display:none, so this plays at that moment. */
+.menu {
+  animation: arrive-card 560ms var(--ease-out) both;
+}
+
+@keyframes arrive-heading {
+  from { opacity: 0; transform: translateY(14px); filter: blur(8px); letter-spacing: 0.02em; }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0);   letter-spacing: -0.02em; }
+}
+
+@keyframes arrive-rise {
+  from { opacity: 0; transform: translateY(10px); filter: blur(4px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
+}
+
+@keyframes arrive-card {
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 ::selection { background: var(--accent); color: var(--bg-page); }
@@ -320,13 +381,72 @@ a:hover { color: var(--accent-soft); }
   row-gap: var(--space-2);
 }
 
+/* Headline sheen — a narrow amber band sweeps through "Noel Kleen" every
+   10s. Two pixel-aligned copies of the text: the shine window translates
+   across while its inner copy counter-translates, so the sweep is pure
+   transform work and the gradient never repaints. The first pass waits
+   3s so it lands after the arrival choreography settles. */
+.hero-sheen {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.hero-sheen-shine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 32%;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #1a1108 38%, #1a1108 62%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #1a1108 38%, #1a1108 62%, transparent);
+  transform: translateX(-100%);
+  animation: sheen-band 10s ease-in-out 3s infinite;
+  will-change: transform;
+}
+
+.hero-sheen-inner {
+  display: inline-block;
+  white-space: nowrap;
+  background: linear-gradient(180deg, #f0c39a 0%, #e8a87c 55%, #df9668 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  transform: translateX(32%);
+  animation: sheen-band-inner 10s ease-in-out 3s infinite;
+  will-change: transform;
+}
+
+@keyframes sheen-band {
+  0%   { transform: translateX(-100%); }
+  30%  { transform: translateX(312.5%); }
+  100% { transform: translateX(312.5%); }
+}
+
+@keyframes sheen-band-inner {
+  0%   { transform: translateX(32%); }
+  30%  { transform: translateX(-100%); }
+  100% { transform: translateX(-100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-sheen-shine { display: none; }
+}
+
 /* The "Projects" jump-link beside the title. Display-size inline link;
-   doesn't try to be a chip. Refinement: an animated underline that wipes
-   in from the left (scaleX from 0, transform-origin left) — a piece of
-   the page's terracotta accent literally appearing under the word as you
-   approach it. The arrow drifts right with a small overshoot via the
-   custom easing. The underline sits on the word only, not under the
-   arrow, so the arrow's motion stays unambiguous. */
+   doesn't try to be a chip. Refinements: an animated underline that wipes
+   in from the left (scaleX from 0, transform-origin left) with a slight
+   overshoot on the way in — a piece of the page's terracotta accent
+   literally appearing under the word as you approach it — and a letter
+   ripple, each letter lifting 3px in a 25ms stagger (the spans carry
+   their index in --i). The word is aria-hidden with an sr-only twin so
+   assistive tech reads "Projects", not eight fragments. The underline
+   sits on the word only, not under the arrow, so the arrow's motion
+   stays unambiguous. */
 .hero-projects {
   display: inline-flex;
   align-items: baseline;
@@ -340,12 +460,12 @@ a:hover { color: var(--accent-soft); }
   transition: color var(--motion-fast) var(--ease-out);
 }
 
-.hero-projects > span:first-child {
+.hero-projects-word {
   position: relative;
   display: inline-block;
 }
 
-.hero-projects > span:first-child::after {
+.hero-projects-word::after {
   content: "";
   position: absolute;
   left: 0;
@@ -359,9 +479,10 @@ a:hover { color: var(--accent-soft); }
   transition: transform var(--motion-smooth) var(--ease-out);
 }
 
-.hero-projects:hover > span:first-child::after,
-.hero-projects:focus-visible > span:first-child::after {
+.hero-projects:hover .hero-projects-word::after,
+.hero-projects:focus-visible .hero-projects-word::after {
   transform: scaleX(1);
+  transition: transform 550ms var(--ease-spring);
 }
 
 .hero-projects:hover,
@@ -370,9 +491,16 @@ a:hover { color: var(--accent-soft); }
   outline: none;
 }
 
+.hero-projects-word span,
 .hero-projects-arrow {
   display: inline-block;
   transition: transform var(--motion-smooth) var(--ease-out);
+  transition-delay: calc(var(--i) * 25ms);
+}
+
+.hero-projects:hover .hero-projects-word span,
+.hero-projects:focus-visible .hero-projects-word span {
+  transform: translateY(-3px);
 }
 
 .hero-projects:hover .hero-projects-arrow,
@@ -455,6 +583,7 @@ a:hover { color: var(--accent-soft); }
    --------------------------------------------------------------------- */
 
 .link-row {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
@@ -519,6 +648,117 @@ a.link-row:active {
   line-height: 1;
   transition: transform var(--motion-smooth) var(--ease-out),
               color var(--motion-smooth) var(--ease-out);
+}
+
+/* Border beam — a terracotta spark laps the card border on hover.
+   A conic gradient on ::before, masked down to a 1.5px ring (padding-box
+   XOR full-box), spun by animating a registered custom property. The
+   animation idles at play-state:paused so a resting card costs nothing.
+   Where @property is missing the inline script tags <html> with
+   .no-at-property and the hover ring falls back to a static accent
+   gradient; reduced-motion gets the same stand-in. */
+
+@property --beam-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.link-row::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  /* One px outside a --radius card, so the ring radius tracks the token. */
+  border-radius: calc(var(--radius) + 1px);
+  padding: 1.5px;
+  /* Shared static stand-in for when the beam can't spin (no @property /
+     reduced motion). Defined once here, applied by both fallbacks below. */
+  --beam-fallback: linear-gradient(135deg,
+    rgba(217, 119, 87, 0.6),
+    rgba(217, 119, 87, 0.12) 55%,
+    rgba(217, 119, 87, 0.35));
+  background: conic-gradient(
+    from var(--beam-angle),
+    rgba(217, 119, 87, 0) 0deg,
+    rgba(217, 119, 87, 0) 285deg,
+    rgba(217, 119, 87, 0.55) 341deg,
+    var(--accent) 356deg,
+    rgba(232, 168, 124, 0.95) 360deg
+  );
+  -webkit-mask: linear-gradient(#1a1108 0 0) content-box, linear-gradient(#1a1108 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#1a1108 0 0) content-box, linear-gradient(#1a1108 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--motion-smooth) var(--ease-out);
+  animation: beam-spin 2.6s linear infinite paused;
+}
+
+a.link-row:hover::before,
+a.link-row:focus-visible::before {
+  opacity: 1;
+  animation-play-state: running;
+}
+
+@keyframes beam-spin {
+  to { --beam-angle: 360deg; }
+}
+
+/* Surface sheen — one faint amber sweep across the card per hover-enter.
+   Lives on a dedicated overlay span so the moving strip can be clipped
+   without putting overflow:hidden on the row (which would cut the beam
+   ring off at the border). */
+.link-row-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.link-row-sheen::before {
+  content: "";
+  position: absolute;
+  top: -30%;
+  bottom: -30%;
+  left: 0;
+  width: 60%;
+  background: linear-gradient(105deg,
+    rgba(232, 168, 124, 0) 0%,
+    rgba(232, 168, 124, 0.07) 50%,
+    rgba(232, 168, 124, 0) 100%);
+  transform: translateX(-130%);
+}
+
+a.link-row:hover .link-row-sheen::before,
+a.link-row:focus-visible .link-row-sheen::before {
+  animation: sheen-sweep 900ms cubic-bezier(0.33, 0, 0.2, 1) forwards;
+}
+
+@keyframes sheen-sweep {
+  from { transform: translateX(-130%); }
+  to   { transform: translateX(300%); }
+}
+
+.no-at-property .link-row::before {
+  animation: none;
+}
+
+.no-at-property a.link-row:hover::before,
+.no-at-property a.link-row:focus-visible::before {
+  background: var(--beam-fallback);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link-row::before {
+    animation: none;
+  }
+  a.link-row:hover::before,
+  a.link-row:focus-visible::before {
+    background: var(--beam-fallback);
+  }
+  .link-row-sheen { display: none; }
 }
 
 .link-credit {
@@ -722,17 +962,26 @@ a.link-row:active {
   animation: status-pulse-muted 2s ease-out infinite;
 }
 
-/* Live → accent, with a slow 4s breath so "online" reads as alive.
-   Smaller spread + lower alpha than the first cut — the eye picks up
-   on the pulse only when looking at the dot. Reduced-motion users get
-   the static dot via the global rule below. */
+/* Live → accent. One springy pop when the probe resolves (the final
+   beat of the arrival choreography — dots land whenever their host
+   answers), then a slow 4s breath so "online" reads as alive. Smaller
+   spread + lower alpha than the first cut — the eye picks up on the
+   pulse only when looking at the dot. Reduced-motion users get the
+   static dot via the global rule below. */
 .is-up .status-dot {
   background: var(--accent);
   box-shadow: 0 0 0 0 rgba(217, 119, 87, 0.35);
-  animation: status-pulse 4s ease-out infinite;
+  animation: status-pop 480ms var(--ease-spring) both,
+             status-pulse 4s ease-out 480ms infinite;
 }
 
 .is-down .status-dot { background: var(--fg-muted); }
+
+@keyframes status-pop {
+  0%   { opacity: 0; transform: scale(0.4); }
+  60%  { opacity: 1; transform: scale(1.3); }
+  100% { opacity: 1; transform: scale(1); }
+}
 
 @keyframes status-pulse {
   0%   { box-shadow: 0 0 0 0   rgba(217, 119, 87, 0.35); }
