@@ -154,8 +154,8 @@ html, body {
   min-height: 100vh;
 }
 
-/* Page colour lives on html so body's pseudo-elements can layer the
-   animated topography + glow above it without occluding each other. */
+/* Page colour lives on html so the fixed backdrop layers (contour canvas,
+   glow, ember canvas) can stack above it without occluding each other. */
 html {
   background-color: var(--bg-page);
 }
@@ -171,37 +171,40 @@ body {
 
 
 /* ---- Animated backdrop -----------------------------------------------
-   Ported from the /projects page. Four layers, all behind content:
-     1. body::before — the topography texture, drifting + zooming slowly
-     2. .embers      — a fixed canvas of ember motes rising from the
+   Four layers, all behind content:
+     1. .contours    — a fixed canvas of drifting elevation contours: a
+                       living version of the old topography.jpg texture
+                       (driven by the inline contours script)
+     2. body::after  — a static banked-fire glow pooled along the bottom
+     3. .embers      — a fixed canvas of ember motes rising from the
                        bottom edge (driven by the inline embers script)
-     3. body::after  — a static banked-fire glow pooled along the bottom
      4. .cursor-glow — a spotlight that follows the mouse (set in JS via
                        --mouse-x / --mouse-y custom properties)
    The design system has a "no background animation" rule; this is an
    intentional override to match the rest of the noelkleen.com surface.
    The old pair of wandering radial glows moved out when the embers
-   arrived — two kinds of ambient drift in one backdrop read as busy.
+   arrived, and the drifting topography.jpg gave way to the contour
+   canvas — two kinds of ambient drift in one backdrop read as busy.
    --------------------------------------------------------------------- */
 
-body::before,
-body::after {
-  content: "";
+/* Living topography — the backmost layer. z-index:-2 keeps it behind the
+   glow and embers (both z-index:-1); the inline contours script sizes it
+   to the viewport and renders the marching-squares contour field into it. */
+.contours {
   position: fixed;
-  z-index: -1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
   pointer-events: none;
 }
 
-body::before {
-  inset: -8%;
-  background: url("/images/topography.jpg") center / cover no-repeat;
-  opacity: 0.65;
-  will-change: transform, opacity;
-  animation: backdrop-drift 10s ease-in-out infinite alternate;
-}
-
 body::after {
+  content: "";
+  position: fixed;
   inset: 0;
+  z-index: -1;
+  pointer-events: none;
   background:
     radial-gradient(90% 55% at 50% 112%,
                     rgba(217, 119, 87, 0.16) 0%,
@@ -209,11 +212,6 @@ body::after {
     radial-gradient(45% 28% at 24% 108%,
                     rgba(217, 119, 87, 0.09) 0%,
                     rgba(217, 119, 87, 0) 70%);
-}
-
-@keyframes backdrop-drift {
-  0%   { transform: translate3d(-2%, -1%, 0) scale(1.04) rotate(-0.8deg); }
-  100% { transform: translate3d(2%, 1.5%, 0) scale(1.10) rotate(0.8deg); }
 }
 
 .embers {

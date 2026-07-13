@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="/css/styles.css?v=__CSS_VERSION__" />
   </head>
   <body>
+    <canvas class="contours" aria-hidden="true"></canvas>
     <div class="cursor-glow" aria-hidden="true"></div>
     <canvas class="embers" aria-hidden="true"></canvas>
     <div class="wrap">
@@ -393,6 +394,212 @@
         });
 
         setRunning(!document.hidden);
+      })();
+    </script>
+    <script>
+      // Living topography — the backmost backdrop layer. A canvas draws
+      // real elevation contours (marching squares) over smooth 3D value
+      // noise whose third axis is time, so the "terrain" morphs through a
+      // new map over ~a minute. Replaces the old drifting topography.jpg:
+      // terracotta lines at ~10% opacity, every 4th ring an "index"
+      // contour a touch brighter. Render is capped at ~30fps (the motion
+      // is glacial), the loop stops on hidden tabs, and reduced-motion
+      // draws one static frame — the role the static JPG used to play.
+      (function () {
+        'use strict';
+        var canvas = document.querySelector('.contours');
+        if (!canvas || !canvas.getContext) return;
+        var ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        var mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+        // Tuning: features ~300px wide, a full morph cycle ~a minute.
+        var CELL = 12;            // marching-squares grid resolution (CSS px)
+        var FREQ = 1 / 300;       // base noise frequency
+        var Z_SPEED = 0.016;      // noise-z units per second (the breathing)
+        var DRIFT = 0.0007;       // noise-x units per second (a slow creep)
+        var LEVEL_COUNT = 11;
+        var LEVEL_LO = 0.22;
+        var LEVEL_HI = 0.78;
+        var COLOR_MINOR = 'rgba(217,119,87,0.10)';
+        var COLOR_INDEX = 'rgba(217,119,87,0.16)';
+
+        var levels = [];
+        for (var li = 0; li < LEVEL_COUNT; li++) {
+          levels.push(LEVEL_LO + (LEVEL_HI - LEVEL_LO) * li / (LEVEL_COUNT - 1));
+        }
+
+        // --- 3D value noise (x, y, time) -----------------------------------
+        function hash(ix, iy, iz) {
+          var n = (Math.imul(ix, 374761393) + Math.imul(iy, 668265263) + Math.imul(iz, 1274126177)) | 0;
+          n = Math.imul(n ^ (n >>> 13), 1103515245) | 0;
+          n = n ^ (n >>> 16);
+          return (n >>> 0) / 4294967296;
+        }
+
+        function vnoise(x, y, z) {
+          var xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+          var u = x - xi; u = u * u * (3 - 2 * u);
+          var v = y - yi; v = v * v * (3 - 2 * v);
+          var w = z - zi; w = w * w * (3 - 2 * w);
+          var n000 = hash(xi, yi, zi), n100 = hash(xi + 1, yi, zi);
+          var n010 = hash(xi, yi + 1, zi), n110 = hash(xi + 1, yi + 1, zi);
+          var n001 = hash(xi, yi, zi + 1), n101 = hash(xi + 1, yi, zi + 1);
+          var n011 = hash(xi, yi + 1, zi + 1), n111 = hash(xi + 1, yi + 1, zi + 1);
+          var a = n000 + (n100 - n000) * u;
+          var b = n010 + (n110 - n010) * u;
+          var c = n001 + (n101 - n001) * u;
+          var d = n011 + (n111 - n011) * u;
+          var e = a + (b - a) * v;
+          var f = c + (d - c) * v;
+          return e + (f - e) * w;
+        }
+
+        function fbm(x, y, z) {
+          return (vnoise(x, y, z)
+            + 0.5 * vnoise(x * 2 + 5.2, y * 2 + 1.3, z * 2 + 2.8)
+            + 0.25 * vnoise(x * 4 + 9.7, y * 4 + 8.1, z * 4 + 6.4)) / 1.75;
+        }
+
+        // --- grid / canvas sizing ------------------------------------------
+        var cssW = 0, cssH = 0, gw = 0, gh = 0;
+        var field = new Float32Array(0);
+
+        function resize() {
+          cssW = window.innerWidth;
+          cssH = window.innerHeight;
+          var dpr = Math.min(window.devicePixelRatio || 1, 2);
+          canvas.width = Math.max(1, Math.round(cssW * dpr));
+          canvas.height = Math.max(1, Math.round(cssH * dpr));
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          gw = Math.ceil(cssW / CELL) + 3;
+          gh = Math.ceil(cssH / CELL) + 3;
+          field = new Float32Array(gw * gh);
+        }
+
+        function sampleField(sec) {
+          var z = sec * Z_SPEED;
+          var xd = sec * DRIFT;
+          var k = 0;
+          for (var j = 0; j < gh; j++) {
+            var ny = (j - 1) * CELL * FREQ;
+            for (var i = 0; i < gw; i++, k++) {
+              field[k] = fbm((i - 1) * CELL * FREQ + xd, ny, z);
+            }
+          }
+        }
+
+        // --- marching squares ----------------------------------------------
+        // Edges: 0 top, 1 right, 2 bottom, 3 left. Corner bits: TL=1 TR=2 BR=4 BL=8.
+        var SEGS = [
+          null, [3, 0], [0, 1], [3, 1],
+          [1, 2], [3, 0, 1, 2], [0, 2], [3, 2],
+          [2, 3], [0, 2], [0, 1, 2, 3], [1, 2],
+          [1, 3], [0, 1], [3, 0], null
+        ];
+
+        var epx = 0, epy = 0;
+
+        function edgePoint(edge, L, a, b, c, d, x0, y0) {
+          var t;
+          if (edge === 0) { t = (L - a) / (b - a); epx = x0 + t * CELL; epy = y0; }
+          else if (edge === 1) { t = (L - b) / (c - b); epx = x0 + CELL; epy = y0 + t * CELL; }
+          else if (edge === 2) { t = (L - d) / (c - d); epx = x0 + t * CELL; epy = y0 + CELL; }
+          else { t = (L - a) / (d - a); epx = x0; epy = y0 + t * CELL; }
+        }
+
+        function marchLevel(L) {
+          for (var j = 0; j < gh - 1; j++) {
+            var y0 = (j - 1) * CELL;
+            var r0 = j * gw;
+            var r1 = r0 + gw;
+            for (var i = 0; i < gw - 1; i++) {
+              var a = field[r0 + i], b = field[r0 + i + 1];
+              var c = field[r1 + i + 1], d = field[r1 + i];
+              var idx = 0;
+              if (a > L) idx |= 1;
+              if (b > L) idx |= 2;
+              if (c > L) idx |= 4;
+              if (d > L) idx |= 8;
+              var segs = SEGS[idx];
+              if (!segs) continue;
+              var x0 = (i - 1) * CELL;
+              for (var s = 0; s < segs.length; s += 2) {
+                edgePoint(segs[s], L, a, b, c, d, x0, y0);
+                ctx.moveTo(epx, epy);
+                edgePoint(segs[s + 1], L, a, b, c, d, x0, y0);
+                ctx.lineTo(epx, epy);
+              }
+            }
+          }
+        }
+
+        function render(sec) {
+          sampleField(sec);
+          ctx.clearRect(0, 0, cssW, cssH);
+          ctx.lineWidth = 1;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          for (var i = 0; i < levels.length; i++) {
+            if (i % 4 !== 3) marchLevel(levels[i]);
+          }
+          ctx.strokeStyle = COLOR_MINOR;
+          ctx.stroke();
+          ctx.beginPath();
+          for (i = 0; i < levels.length; i++) {
+            if (i % 4 === 3) marchLevel(levels[i]);
+          }
+          ctx.strokeStyle = COLOR_INDEX;
+          ctx.stroke();
+        }
+
+        // --- run control ----------------------------------------------------
+        var sec = 47;             // fixed offset into the noise field (seed)
+        var rafId = 0;
+        var running = false;
+        var last = 0;
+        var lastRender = -1e9;
+
+        function tick(now) {
+          rafId = requestAnimationFrame(tick);
+          var dt = (now - last) / 1000;
+          last = now;
+          if (dt > 0.1) dt = 0.1;
+          sec += dt;
+          if (now - lastRender < 31) return; // ~30fps — the motion is far too slow to need 60
+          lastRender = now;
+          render(sec);
+        }
+
+        function updateRun() {
+          var should = !document.hidden && !mq.matches;
+          if (should && !running) {
+            running = true;
+            last = performance.now();
+            rafId = requestAnimationFrame(tick);
+          } else if (!should && running) {
+            running = false;
+            cancelAnimationFrame(rafId);
+          }
+        }
+
+        document.addEventListener('visibilitychange', updateRun);
+        if (mq.addEventListener) mq.addEventListener('change', updateRun);
+        else if (mq.addListener) mq.addListener(updateRun); // older Safari
+
+        function onResize() {
+          // Skip no-op resizes (some browsers fire with unchanged dimensions);
+          // otherwise rebuild the grid and repaint, and re-seed the static
+          // frame when the loop isn't running.
+          if (window.innerWidth === cssW && window.innerHeight === cssH) return;
+          resize();
+          render(sec);
+        }
+        window.addEventListener('resize', onResize);
+
+        resize();
+        render(sec);  // first frame — and the only frame under reduced motion
+        updateRun();  // start the loop unless the tab is hidden or motion is reduced
       })();
     </script>
   </body>
