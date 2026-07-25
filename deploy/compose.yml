@@ -1,0 +1,41 @@
+# Server-side stack for home_page. Lives at /home/abstract/deploy/home_page/ on
+# bserver, next to a .env. There is deliberately no `build:` key here: the
+# server has no source tree and must never try to compile anything.
+#
+# The repo-root compose.yml still builds, and is what you use locally. The two
+# files describe the same service two ways — change the port or add a service
+# in one and you must mirror it in the other.
+#
+# Deploy:   docker compose pull && docker compose up -d --wait
+# Rollback: set TAG to an older sha-xxxxxxx in .env, then the same two commands.
+
+# Read off the live container, not guessed from the directory:
+#   docker inspect -f '{{index .Config.Labels "com.docker.compose.project"}}' home_page-web-1
+#   -> home_page
+# Pinning it makes this file replace the running container in place. Without
+# the pin Compose derives the name from the directory — which happens to give
+# the same answer today, but only by luck, and a future rename of the deploy
+# directory would then stand up a second stack that collides on port 6789.
+name: home_page
+
+services:
+  # Service key must stay `web`: it is half of the container name
+  # (home_page-web-1) and of the network alias.
+  web:
+    image: ghcr.io/abstractnucleus/home_page:${TAG:-latest}
+    restart: unless-stopped
+    ports:
+      # Required, not defaulted. The site is public through Cloudflare, so
+      # 0.0.0.0 is correct here — but a missing key must fail the deploy rather
+      # than silently pick a binding for you. nginx on aserver reaches this at
+      # 100.124.22.82:6789.
+      - "${HOST_BIND_IP:?HOST_BIND_IP must be set in .env}:6789:80"
+
+# No volumes and no bind mounts: the site is baked into the image. `docker
+# inspect` on the live container reports `Mounts: []`, so there is no state to
+# carry across and nothing here depends on a source tree being present.
+#
+# No `env_file:` either. The image is stock nginx serving static files and
+# reads no configuration; TAG and HOST_BIND_IP are consumed by Compose for
+# interpolation, which it picks up from ./.env on its own. Adding `env_file:`
+# would inject both into the container and drift from the live environment.
