@@ -3,7 +3,7 @@
     {
       "title": "Terminal Launcher",
       "description": "Keyboard-driven launcher: fuzzy-search saved directories and SSH hosts, open them in WezTerm with a hotkey.",
-      "image": "/images/terminal_launcher.jpg?v=2",
+      "image": "/images/terminal_launcher.jpg?v=3",
       "url": "https://github.com/AbstractNucleus/terminal_launcher"
     },
     {
@@ -15,6 +15,7 @@
     {
       "title": "Home Page",
       "description": "Source for noelkleen.com, my personal home page.",
+      "image": "/images/home_page.jpg?v=1",
       "url": "https://github.com/AbstractNucleus/home_page"
     }
   ]
