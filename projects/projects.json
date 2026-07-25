@@ -1,6 +1,11 @@
 {
   "projects": [
     {
+      "title": "Templater",
+      "description": "Desktop widget for one-click customer-support replies: tag and search templates, then copy with opening and signature.",
+      "url": "https://github.com/AbstractNucleus/templater"
+    },
+    {
       "title": "Terminal Launcher",
       "description": "Keyboard-driven launcher: fuzzy-search saved directories and SSH hosts, open them in WezTerm with a hotkey.",
       "image": "/images/terminal_launcher.jpg?v=3",
