@@ -1,0 +1,42 @@
+# Keeps the build context to what the Dockerfile actually COPYs.
+#
+# The Dockerfile copies six paths and nothing else:
+#   css/styles.css  fonts  images  js  index.html  projects
+# Everything named below sits outside that set. Nothing here may ever match
+# inside those six paths, or the site ships with a missing asset and no error:
+# a `COPY <dir>` whose contents are all excluded still succeeds and leaves an
+# empty directory behind.
+#
+# Patterns match from the context root and a bare `*` does not cross `/`, so
+# anything meant to match at any depth is written `**/`.
+#
+# Do NOT add blanket rules like `*.txt` (fonts/OFL.txt is shipped) or `*.json`
+# (projects/projects.json is the gallery) or `*.js` (js/backdrop.js and
+# projects/cards.js are the site).
+
+# Version control and CI
+.git
+.gitignore
+.github
+
+# Agent and editor scratch
+.claude
+.superpowers
+**/node_modules/
+**/__pycache__/
+
+# Build and deploy definitions — describe the image, never live inside it
+Dockerfile
+.dockerignore
+compose.yml
+docker-compose.yml
+deploy
+
+# Repo documentation. LICENSE and README are not served; fonts/OFL.txt is,
+# and is untouched by these rules.
+README.md
+LICENSE
+
+# OS droppings
+**/.DS_Store
+**/Thumbs.db
